@@ -1,4 +1,4 @@
-namespace SearchEngine.interfaces;
+namespace SearchEngine_.utils;
 
 /// <summary>
 /// Interface for filtering out stop words from a list of words.

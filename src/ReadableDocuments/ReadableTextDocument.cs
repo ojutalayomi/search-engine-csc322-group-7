@@ -1,6 +1,4 @@
-using SearchEngine.interfaces;
-
-namespace SearchEngine.implementations;
+namespace SearchEngine_.ReadableDocuments;
 
 /// <summary>
 /// Implementation of IReadableDocument for plain text documents.

@@ -1,6 +1,4 @@
-using SearchEngine.interfaces;
-
-namespace SearchEngine.implementations;
+namespace SearchEngine_.ReadableDocuments;
 
 /// <summary>
 /// Factory implementation for creating readable documents based on MIME type.

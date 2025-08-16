@@ -1,4 +1,4 @@
-namespace SearchEngine.interfaces;
+namespace SearchEngine_.ReadableDocuments;
 
 /// <summary>
 /// Abstract data type that allows words to be read from a document.

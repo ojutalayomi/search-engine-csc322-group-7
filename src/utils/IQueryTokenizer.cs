@@ -1,5 +1,6 @@
-using SearchEngine.interfaces;
-using SearchEngine.models;
+using SearchEngine_.models;
+
+namespace SearchEngine_.utils;
 
 /// <summary>
 /// Interface for tokenizing queries, removing stop words, and searching the database for word indices.

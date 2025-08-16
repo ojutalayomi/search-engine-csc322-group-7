@@ -1,7 +1,6 @@
-using SearchEngine.interfaces;
 using System.Text.RegularExpressions;
 
-namespace SearchEngine.implementations;
+namespace SearchEngine_.ReadableDocuments;
 
 /// <summary>
 /// Implementation of IReadableDocument for PDF documents.

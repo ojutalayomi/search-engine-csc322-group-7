@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSC322 Search Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .search-section {
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .search-box {
+            display: flex;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 20px 25px;
+            border: none;
+            font-size: 18px;
+            outline: none;
+        }
+        
+        .search-button {
+            padding: 20px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .search-button:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-2px);
+        }
+        
+        .autocomplete-suggestions {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .suggestion-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s ease;
+        }
+        
+        .suggestion-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .results-section {
+            padding: 0 40px 40px;
+            display: none;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .result-item {
+            background: #f8f9fa;
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.2s ease;
+        }
+        
+        .result-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .result-title {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .result-snippet {
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .result-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            color: #888;
+        }
+        
+        .result-score {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        #clearButton {
+            position: absolute;
+            top: 0;
+            right: 20px;
+            padding: 10px 20px;
+            color: red;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+        
+        .stats-section {
+            background: #f8f9fa;
+            padding: 30px 40px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .performance-info {
+            background: #e8f4fd;
+            color: #0066cc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 CSC322 Search Engine</h1>
+            <p>Advanced Information Retrieval System</p>
+        </div>
+        
+        <div class="search-section">
+            <div class="search-box">
+                <label for="searchInput"></label>
+                <input type="text" class="search-input" id="searchInput" placeholder="Enter your search query..." autocomplete="off">
+                <button class="search-button" onclick="performSearch()">Search</button>
+            </div>
+            
+            <div class="autocomplete-suggestions" id="autocompleteSuggestions"></div>
+            
+            <div class="performance-info">
+                ⚡ Performance Target: Query response time &lt; 10ms | Indexing delay &lt; 2 hours
+            </div>
+        </div>
+        
+        <div class="results-section" id="resultsSection">
+            <h2>Search Results</h2>
+            <span id="clearButton">Clear</span>
+            <div id="resultsContainer"></div>
+        </div>
+        
+        <div class="stats-section">
+            <h3>Search Engine Statistics</h3>
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-item">
+                    <div class="stat-number">-</div>
+                    <div class="stat-label">Documents Indexed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">-</div>
+                    <div class="stat-label">Total Words</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">-</div>
+                    <div class="stat-label">Avg Words/Doc</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">-</div>
+                    <div class="stat-label">Response Time</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let searchTimeout;
+        
+        // Auto-complete functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                hideAutocomplete();
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                getAutocompleteSuggestions(query);
+            }, 300);
+        });
+        
+        // Clear results
+        document.getElementById('clearButton').addEventListener('click', function(e) {
+            document.getElementById('resultsContainer').innerHTML = '';
+            document.getElementById('resultsSection').style.display = 'none';
+        });
+        
+        // Hide autocomplete when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-box') && !e.target.closest('.autocomplete-suggestions')) {
+                hideAutocomplete();
+            }
+        });
+        
+        async function getAutocompleteSuggestions(partialWord) {
+            try {
+                const response = await fetch(`/api/search/autocomplete?partialWord=${encodeURIComponent(partialWord)}`);
+                const data = await response.json();
+                
+                if (data.suggestions && data.suggestions.length > 0) {
+                    showAutocomplete(data.suggestions);
+                } else {
+                    hideAutocomplete();
+                }
+            } catch (error) {
+                console.error('Auto-complete error:', error);
+                hideAutocomplete();
+            }
+        }
+        
+        function showAutocomplete(suggestions) {
+            const container = document.getElementById('autocompleteSuggestions');
+            container.innerHTML = '';
+            
+            suggestions.forEach(suggestion => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.textContent = suggestion;
+                item.onclick = () => {
+                    document.getElementById('searchInput').value = suggestion;
+                    hideAutocomplete();
+                    performSearch();
+                };
+                container.appendChild(item);
+            });
+            
+            container.style.display = 'block';
+        }
+        
+        function hideAutocomplete() {
+            document.getElementById('autocompleteSuggestions').style.display = 'none';
+        }
+        
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            
+            if (!query) {
+                alert('Please enter a search query');
+                return;
+            }
+            
+            hideAutocomplete();
+            showLoading();
+            
+            try {
+                const startTime = performance.now();
+                const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                const endTime = performance.now();
+                
+                if (response.ok) {
+                    displayResults(data, endTime - startTime);
+                    updateStats();
+                } else {
+                    showError(data.error || 'Search failed');
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                showError('Network error occurred');
+            }
+        }
+        
+        function showLoading() {
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('resultsContainer').innerHTML = '<div class="loading">🔍 Searching...</div>';
+        }
+        
+        function displayResults(data, clientTime) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (!data.results || data.results.length === 0) {
+                container.innerHTML = '<div class="loading">No results found</div>';
+                return;
+            }
+            
+            let html = `<div class="performance-info">
+                ⚡ Found ${data.totalResults} results in ${data.responseTimeMs?.toFixed(2) || 'N/A'}ms 
+                (Client time: ${clientTime.toFixed(2)}ms)
+            </div>`;
+            
+            data.results.forEach(result => {
+                html += `
+                    <div class="result-item">
+                        <div class="result-title">
+                            <a href="${result.documentLink}" target="_blank">${result.documentName}</a>
+                        </div>
+                        <div class="result-snippet">${result.snippet}</div>
+                        <div class="result-meta">
+                            <span>Indexed: ${new Date(result.indexedAt).toLocaleDateString()}</span>
+                            <span class="result-score">Score: ${(result.relevanceScore * 100).toFixed(1)}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function showError(message) {
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('resultsContainer').innerHTML = `<div class="error">❌ ${message}</div>`;
+        }
+        
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/search/statistics');
+                const data = await response.json();
+                
+                if (response.ok && data.statistics) {
+                    const stats = data.statistics;
+                    document.querySelector('.stats-grid').innerHTML = `
+                        <div class="stat-item">
+                            <div class="stat-number">${stats.totalDocuments}</div>
+                            <div class="stat-label">Documents Indexed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${stats.totalWords}</div>
+                            <div class="stat-label">Total Words</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${stats.averageWordsPerDocument.toFixed(0)}</div>
+                            <div class="stat-label">Avg Words/Doc</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">&lt;10ms</div>
+                            <div class="stat-label">Target Response</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Stats update error:', error);
+            }
+        }
+        
+        // Load initial stats
+        updateStats();
+        
+        // Enter key support
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+</body>
+</html>

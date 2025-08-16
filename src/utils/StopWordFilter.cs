@@ -1,6 +1,4 @@
-using SearchEngine.interfaces;
-
-namespace SearchEngine.implementations;
+namespace SearchEngine_.utils;
 
 /// <summary>
 /// Implementation of IStopWordFilter for removing common stop words from text.

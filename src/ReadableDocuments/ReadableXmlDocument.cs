@@ -1,7 +1,6 @@
-using SearchEngine.interfaces;
 using System.Xml;
 
-namespace SearchEngine.implementations;
+namespace SearchEngine_.ReadableDocuments;
 
 /// <summary>
 /// Implementation of IReadableDocument for XML documents.

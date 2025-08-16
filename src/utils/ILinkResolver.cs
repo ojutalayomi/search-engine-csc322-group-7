@@ -1,4 +1,4 @@
-namespace SearchEngine.interfaces;
+namespace SearchEngine_.utils;
 
 /// <summary>
 /// Responsible for downloading documents into memory and obtaining MIME types from response headers.

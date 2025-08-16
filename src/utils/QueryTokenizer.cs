@@ -1,7 +1,6 @@
-using SearchEngine.interfaces;
-using SearchEngine.models;
+using SearchEngine_.models;
 
-namespace SearchEngine.implementations;
+namespace SearchEngine_.utils;
 
 /// <summary>
 /// Implementation of IQueryTokenizer for processing search queries.

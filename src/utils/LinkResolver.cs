@@ -1,7 +1,4 @@
-using SearchEngine.interfaces;
-using System.Net.Http;
-
-namespace SearchEngine.implementations;
+namespace SearchEngine_.utils;
 
 /// <summary>
 /// Implementation of ILinkResolver for downloading documents and obtaining MIME types.
