@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SearchEngine_.models;
-// using SearchEngine.services;
+using SearchEngine.services;
 
 namespace SearchEngine_.controllers;
 
@@ -12,8 +12,14 @@ namespace SearchEngine_.controllers;
 [Route("api/")]
 public class SearchController : ControllerBase
 {
-    // private readonly InvertedIndexService _indexService;
-    // private readonly SearchEngineService _searchEngine;
+    private readonly InvertedIndexService _indexService;
+    private readonly SearchEngineService _searchEngine;
+    
+    public SearchController(InvertedIndexService indexService, SearchEngineService searchEngine)
+    {
+        _indexService = indexService;
+        _searchEngine = searchEngine;
+    }
     
     /// <summary>
     /// Search for documents based on a query.
@@ -34,6 +40,9 @@ public class SearchController : ControllerBase
             
             // Tokenize and search
             var results = "My name is <NAME> and I am a software engineer."; // A method that accepts the query as an argument and return the results
+            
+            // Simulate async operation
+            await Task.Delay(1);
             
             // Limit results
             var limitedResults = results.Take(maxResults).ToList();
@@ -70,17 +79,20 @@ public class SearchController : ControllerBase
         try
         {
             // Process the document
-            // var index = await _searchEngine.ProcessQueueRequestAsync(request);
+            var index = await _searchEngine.ProcessQueueRequestAsync(request);
             
             // Add to inverted index
-            // var documentId = _indexService.IndexDocument(request.DocumentURL, index.FrequencyDict);
+            var documentId = _indexService.IndexDocument(request.DocumentURL, index.FrequencyDict);
+            
+            // Simulate async operation
+            await Task.Delay(1);
             
             return Ok(new
             {
                 Message = "Document indexed successfully",
-                DocumentId = "dfdgfghf", // documentId
+                DocumentId = documentId, // documentId
                 DocumentUrl = request.DocumentURL,
-                WordCount = 4, // index.FrequencyDict.Count
+                WordCount = index.FrequencyDict.Count, // index.FrequencyDict.Count
                 IndexedAt = DateTime.UtcNow
             });
         }

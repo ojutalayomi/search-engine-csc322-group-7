@@ -1,24 +1,22 @@
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Parser;
-using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using GemBox.Spreadsheet;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SearchEngine_.ReadableDocuments;
 
 /// <summary>
-/// Implementation of IReadableDocument for PDF documents using iTextSharp.
+/// Implementation of IReadableDocument for Microsoft Excel XLS documents using GemBox.Spreadsheet.
 /// </summary>
-public class ReadablePdfDocument : IReadableDocument
+public class ReadableXlsDocument : IReadableDocument
 {
     private readonly StreamReader _reader;
     private string _content = string.Empty;
     private readonly List<string> _words = new();
     private int _wordIndex = 0;
     
-    public string MimeType => "application/pdf";
+    public string MimeType => "application/vnd.ms-excel";
     
-    public ReadablePdfDocument(StreamReader reader)
+    public ReadableXlsDocument(StreamReader reader)
     {
         _reader = reader;
     }
@@ -27,23 +25,26 @@ public class ReadablePdfDocument : IReadableDocument
     {
         try
         {
-            // Use iText7 to extract text from PDF
-            using (var pdfReader = new PdfReader(_reader.BaseStream))
-            using (var pdfDocument = new PdfDocument(pdfReader))
+            // Use GemBox.Spreadsheet to extract text from XLS files
+            var workbook = ExcelFile.Load(_reader.BaseStream);
+            var text = new StringBuilder();
+            
+            foreach (var worksheet in workbook.Worksheets)
             {
-                var text = new StringBuilder();
-                
-                for (int i = 1; i <= pdfDocument.GetNumberOfPages(); i++)
+                foreach (var row in worksheet.Rows)
                 {
-                    var page = pdfDocument.GetPage(i);
-                    var strategy = new SimpleTextExtractionStrategy();
-                    var pageText = PdfTextExtractor.GetTextFromPage(page, strategy);
-                    text.AppendLine(pageText);
+                    foreach (var cell in row.AllocatedCells)
+                    {
+                        if (cell.Value != null)
+                        {
+                            text.Append(cell.Value.ToString() + " ");
+                        }
+                    }
+                    text.AppendLine();
                 }
-                
-                _content = text.ToString();
             }
             
+            _content = text.ToString();
             _reader.Close();
             
             // Process the extracted text
@@ -56,7 +57,7 @@ public class ReadablePdfDocument : IReadableDocument
         }
         catch (Exception)
         {
-            // If PDF processing fails, create empty content
+            // If XLS processing fails, create empty content
             _content = string.Empty;
             _words.Clear();
         }
@@ -70,4 +71,3 @@ public class ReadablePdfDocument : IReadableDocument
         return _words[_wordIndex++];
     }
 }
-

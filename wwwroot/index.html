@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSC322 Search Engine</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
@@ -12,228 +14,610 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Open Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafe 0%, #e8f2fd 100%);
+            color: #2c3e50;
             min-height: 100vh;
-            padding: 20px;
+            line-height: 1.6;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+            background: transparent;
         }
         
         .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            padding: 30px;
             text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #800020 0%, #a0002a 50%, #660015 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(128, 0, 32, 0.3);
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .university-logo {
+            display: inline-block;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
         }
         
         .header h1 {
-            font-size: 2.5em;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #ffffff;
             margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: #ffd700;
+            font-weight: 500;
+            position: relative;
+            z-index: 2;
+            margin-bottom: 8px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         
         .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 300;
+            position: relative;
+            z-index: 2;
         }
         
         .search-section {
-            padding: 40px;
+            padding: 40px 20px;
             text-align: center;
         }
         
         .search-box {
             display: flex;
-            max-width: 600px;
-            margin: 0 auto 20px;
-            border-radius: 50px;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            background: #ffffff;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(128, 0, 32, 0.08);
+        }
+        
+        .search-box:focus-within {
+            border-color: #800020;
+            box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.1), 0 8px 25px rgba(128, 0, 32, 0.15);
         }
         
         .search-input {
             flex: 1;
-            padding: 20px 25px;
+            padding: 18px 25px;
             border: none;
-            font-size: 18px;
+            background: transparent;
+            color: #2c3e50;
+            font-size: 16px;
             outline: none;
+            font-family: inherit;
+            font-weight: 400;
+        }
+        
+        .search-input::placeholder {
+            color: #7f8c8d;
         }
         
         .search-button {
-            padding: 20px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 18px 32px;
+            background: linear-gradient(135deg, #800020 0%, #660015 100%);
             color: white;
             border: none;
-            font-size: 18px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .search-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .search-button:hover::before {
+            left: 100%;
         }
         
         .search-button:hover {
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            background: linear-gradient(135deg, #660015 0%, #440010 100%);
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(128, 0, 32, 0.3);
         }
         
         .autocomplete-suggestions {
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            background: #ffffff;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
             max-height: 200px;
             overflow-y: auto;
             display: none;
+            z-index: 1000;
         }
         
         .suggestion-item {
-            padding: 15px 25px;
+            padding: 12px 25px;
             cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
-            transition: background 0.2s ease;
+            border-bottom: 1px solid #f1f3f4;
+            transition: all 0.2s ease;
+            color: #2c3e50;
+            font-size: 14px;
         }
         
         .suggestion-item:hover {
             background: #f8f9fa;
+            color: #800020;
         }
         
         .suggestion-item:last-child {
             border-bottom: none;
         }
         
-        .results-section {
-            padding: 0 40px 40px;
-            display: none;
+        .upload-section {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 30px;
+            background: #ffffff;
+            border: 1px solid #e1e8ed;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(128, 0, 32, 0.08);
+        }
+        
+        .upload-section h3 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #800020;
+        }
+        
+        .upload-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .upload-option {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #e1e8ed;
             transition: all 0.3s ease;
             position: relative;
         }
         
+        .upload-option:hover {
+            border-color: #800020;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(128, 0, 32, 0.15);
+        }
+        
+        .upload-option h4 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Hidden file input */
+        .upload-option input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+        }
+        
+        .drag-drop-area {
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #ffffff;
+            position: relative;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .drag-drop-area.dragover {
+            border-color: #800020;
+            background: #fdf5f5;
+            border-style: solid;
+        }
+        
+        .drag-drop-area .upload-icon {
+            font-size: 2.5rem;
+            color: #bdc3c7;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .drag-drop-area:hover .upload-icon,
+        .drag-drop-area.dragover .upload-icon {
+            color: #800020;
+            transform: scale(1.1);
+        }
+        
+        .drag-drop-text {
+            color: #7f8c8d;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .drag-drop-area:hover .drag-drop-text,
+        .drag-drop-area.dragover .drag-drop-text {
+            color: #800020;
+        }
+        
+        .file-list {
+            margin-top: 15px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            background: #ffffff;
+            border: 1px solid #e1e8ed;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-item .file-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .file-item .file-size {
+            color: #7f8c8d;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+        
+        .upload-option input[type="url"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #ffffff;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .upload-option input[type="url"]:focus {
+            outline: none;
+            border-color: #800020;
+            box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.1);
+        }
+        
+        .upload-option input::placeholder {
+            color: #7f8c8d;
+        }
+        
+        .url-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .upload-button {
+            width: 100%;
+            background: linear-gradient(135deg, #800020 0%, #660015 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .upload-button:not(:disabled):hover {
+            background: linear-gradient(135deg, #660015 0%, #440010 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(128, 0, 32, 0.3);
+        }
+        
+        .upload-status {
+            margin-top: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .performance-info {
+            background: #fdf5e6;
+            color: #b8860b;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 25px auto;
+            text-align: center;
+            font-size: 0.9rem;
+            max-width: 700px;
+            border: 1px solid #daa520;
+        }
+        
+        .results-section {
+            padding: 0 20px 40px;
+            display: none;
+            transition: all 0.3s ease;
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .results-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+        
         .result-item {
-            background: #f8f9fa;
+            background: #ffffff;
             margin: 15px 0;
             padding: 20px;
-            border-radius: 10px;
-            border-left: 5px solid #667eea;
-            transition: transform 0.2s ease;
+            border-radius: 8px;
+            border: 1px solid #e1e8ed;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(128, 0, 32, 0.05);
         }
         
         .result-item:hover {
-            transform: translateX(5px);
+            border-color: #800020;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(128, 0, 32, 0.15);
         }
         
         .result-title {
-            font-size: 1.2em;
-            color: #2c3e50;
+            font-size: 1.2rem;
+            color: #800020;
             margin-bottom: 10px;
             font-weight: 600;
         }
         
+        .result-title a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .result-title a:hover {
+            color: #660015;
+            text-decoration: underline;
+        }
+        
         .result-snippet {
-            color: #666;
-            margin-bottom: 10px;
+            color: #5a6c7d;
+            margin-bottom: 12px;
             line-height: 1.5;
+            font-size: 14px;
         }
         
         .result-meta {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.9em;
-            color: #888;
+            font-size: 0.85rem;
+            color: #7f8c8d;
         }
         
         .result-score {
-            background: #667eea;
+            background: linear-gradient(135deg, #800020 0%, #660015 100%);
             color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
+            padding: 6px 12px;
+            border-radius: 12px;
             font-weight: 600;
+            font-size: 0.8rem;
         }
         
         #clearButton {
             position: absolute;
             top: 0;
             right: 20px;
-            padding: 10px 20px;
-            color: red;
-            border: none;
-            border-radius: 50px;
+            padding: 8px 16px;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+            background: #ffffff;
+            border-radius: 6px;
             cursor: pointer;
-            &:hover {
-                text-decoration: underline;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
             }
+        
+        #clearButton:hover {
+            background: #e74c3c;
+            color: #ffffff;
+            transform: translateY(-1px);
         }
         
         .stats-section {
             background: #f8f9fa;
-            padding: 30px 40px;
+            padding: 40px 20px;
             text-align: center;
-            border-top: 1px solid #e9ecef;
+            border-top: 1px solid #e1e8ed;
+        }
+        
+        .stats-section h3 {
+            color: #2c3e50;
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 30px;
         }
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
             margin-top: 20px;
+            max-width: 1000px;
+            margin: 20px auto 0;
         }
         
         .stat-item {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            background: #ffffff;
+            padding: 25px 20px;
+            border-radius: 8px;
+            border: 1px solid #e1e8ed;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(128, 0, 32, 0.05);
+        }
+        
+        .stat-item:hover {
+            border-color: #800020;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(128, 0, 32, 0.15);
         }
         
         .stat-number {
-            font-size: 2em;
+            font-size: 2.2rem;
             font-weight: 700;
-            color: #667eea;
-            margin-bottom: 5px;
+            color: #800020;
+            margin-bottom: 8px;
         }
         
         .stat-label {
-            color: #666;
-            font-size: 0.9em;
+            color: #5a6c7d;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
         
         .loading {
             text-align: center;
             padding: 40px;
-            color: #666;
+            color: #7f8c8d;
+            font-size: 1rem;
         }
         
         .error {
-            background: #fee;
-            color: #c33;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
+            background: #fdf2f2;
+            color: #e74c3c;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
             text-align: center;
+            border: 1px solid #f5c6cb;
+            font-size: 14px;
         }
         
-        .performance-info {
-            background: #e8f4fd;
-            color: #0066cc;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-            font-size: 0.9em;
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .upload-options {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .search-box {
+                flex-direction: column;
+                border-radius: 16px;
+            }
+            
+            .search-button {
+                border-radius: 0 0 16px 16px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 212, 255, 0.5);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔍 CSC322 Search Engine</h1>
-            <p>Advanced Information Retrieval System</p>
+            <div class="university-logo">
+                <h1>University of Lagos</h1>
+                <div class="subtitle">Academic Information Retrieval System</div>
+                <p>CSC322 Search Engine - Department Management Portal</p>
+            </div>
         </div>
         
         <div class="search-section">
@@ -244,6 +628,33 @@
             </div>
             
             <div class="autocomplete-suggestions" id="autocompleteSuggestions"></div>
+            
+            <!-- File Upload and URL Input Section -->
+            <div class="upload-section">
+                <h3>📁 Index New Documents</h3>
+                <div class="upload-options">
+                    <div class="upload-option">
+                        <h4>📄 Upload Files</h4>
+                        <div class="drag-drop-area" id="dragDropArea">
+                            <div class="upload-icon">📁</div>
+                            <div class="drag-drop-text">Drag & drop files here or click to browse</div>
+                            <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.html,.xml" multiple>
+                        </div>
+                        <div class="file-list" id="fileList"></div>
+                        <button class="upload-button" id="uploadFilesBtn" onclick="uploadFiles()" disabled>Upload Files</button>
+                    </div>
+                    
+                    <div class="upload-option">
+                        <h4>🔗 Add URL</h4>
+                        <div class="url-input-group">
+                            <input type="url" id="urlInput" placeholder="Enter document URL (e.g., https://example.com/document.html)">
+                            <button class="upload-button" onclick="addUrl()">Add URL</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upload-status" id="uploadStatus"></div>
+            </div>
             
             <div class="performance-info">
                 ⚡ Performance Target: Query response time &lt; 10ms | Indexing delay &lt; 2 hours
@@ -460,6 +871,194 @@
                 performSearch();
             }
         });
+        
+        // Drag and drop functionality
+        const dragDropArea = document.getElementById('dragDropArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const uploadFilesBtn = document.getElementById('uploadFilesBtn');
+        let selectedFiles = [];
+        
+        // Click to select files
+        dragDropArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // Drag and drop events
+        dragDropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.add('dragover');
+        });
+        
+        dragDropArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.remove('dragover');
+        });
+        
+        dragDropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            handleFileSelection(files);
+        });
+        
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            handleFileSelection(files);
+        });
+        
+        function handleFileSelection(files) {
+            selectedFiles = files;
+            displayFileList(files);
+            uploadFilesBtn.disabled = files.length === 0;
+        }
+        
+        function displayFileList(files) {
+            fileList.innerHTML = '';
+            files.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">${formatFileSize(file.size)}</span>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // File upload functionality
+        async function uploadFiles() {
+            if (selectedFiles.length === 0) {
+                showUploadStatus('Please select files to upload', 'error');
+                return;
+            }
+            
+            showUploadStatus('Uploading files...', 'info');
+            uploadFilesBtn.disabled = true;
+            
+            try {
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    await uploadSingleFile(file);
+                }
+                
+                showUploadStatus(`Successfully uploaded ${selectedFiles.length} file(s)`, 'success');
+                selectedFiles = [];
+                fileInput.value = '';
+                fileList.innerHTML = '';
+                uploadFilesBtn.disabled = true;
+                updateStats(); // Refresh statistics
+            } catch (error) {
+                console.error('Upload error:', error);
+                showUploadStatus('Error uploading files: ' + error.message, 'error');
+                uploadFilesBtn.disabled = false;
+            }
+        }
+        
+        async function uploadSingleFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const response = await fetch('/api/index/file', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Upload failed');
+            }
+            
+            return await response.json();
+        }
+        
+        // URL submission functionality
+        async function addUrl() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showUploadStatus('Please enter a valid URL', 'error');
+                return;
+            }
+            
+            if (!isValidUrl(url)) {
+                showUploadStatus('Please enter a valid URL format', 'error');
+                return;
+            }
+            
+            showUploadStatus('Processing URL...', 'info');
+            
+            try {
+                const response = await fetch('/api/index', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        documentURL: url,
+                        documentName: new URL(url).hostname,
+                        priority: 0,
+                        dateTimeSubmitted: new Date().toISOString()
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'URL processing failed');
+                }
+                
+                const result = await response.json();
+                showUploadStatus(`Successfully indexed: ${result.documentUrl}`, 'success');
+                urlInput.value = ''; // Clear URL input
+                updateStats(); // Refresh statistics
+            } catch (error) {
+                console.error('URL processing error:', error);
+                showUploadStatus('Error processing URL: ' + error.message, 'error');
+            }
+        }
+        
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+        
+        function showUploadStatus(message, type) {
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            // Set appropriate styling based on type
+            statusDiv.className = 'upload-status';
+            if (type === 'error') {
+                statusDiv.style.background = '#fee';
+                statusDiv.style.color = '#c33';
+            } else if (type === 'success') {
+                statusDiv.style.background = '#f0f9eb';
+                statusDiv.style.color = '#2d5a2d';
+            } else {
+                statusDiv.style.background = '#e8f4fd';
+                statusDiv.style.color = '#0066cc';
+            }
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
     </script>
 </body>
 </html>

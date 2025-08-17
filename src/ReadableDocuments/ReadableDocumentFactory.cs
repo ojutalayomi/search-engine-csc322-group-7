@@ -15,23 +15,19 @@ public class ReadableDocumentFactory : IReadableDocumentFactory
             { "text/plain", reader => new ReadableTextDocument(reader) },
             { "application/pdf", reader => new ReadablePdfDocument(reader) },
             { "application/xml", reader => new ReadableXmlDocument(reader) },
-            { "application/msword", reader => new ReadableTextDocument(reader) }, // DOC
-            { "application/vnd.openxmlformats-officedocument.wordprocessingml.document", reader => new ReadableTextDocument(reader) }, // DOCX
-            { "application/vnd.ms-powerpoint", reader => new ReadableTextDocument(reader) }, // PPT
-            { "application/vnd.openxmlformats-officedocument.presentationml.presentation", reader => new ReadableTextDocument(reader) }, // PPTX
-            { "application/vnd.ms-excel", reader => new ReadableTextDocument(reader) }, // XLS
-            { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", reader => new ReadableTextDocument(reader) } // XLSX
+            { "application/msword", reader => new ReadableDocDocument(reader) }, // DOC
+            { "application/vnd.openxmlformats-officedocument.wordprocessingml.document", reader => new ReadableDocxDocument(reader) }, // DOCX
+            { "application/vnd.ms-powerpoint", reader => new ReadablePptDocument(reader) }, // PPT
+            { "application/vnd.openxmlformats-officedocument.presentationml.presentation", reader => new ReadablePptxDocument(reader) }, // PPTX
+            { "application/vnd.ms-excel", reader => new ReadableXlsDocument(reader) }, // XLS
+            { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", reader => new ReadableXlsxDocument(reader) } // XLSX
         };
     }
     
     public IReadableDocument CreateReadableDocument(string mimeType, StreamReader reader)
     {
-        if (_documentCreators.TryGetValue(mimeType, out var creator))
-        {
-            return creator(reader);
-        }
-        
-        // Default to text document if MIME type is not supported
-        return new ReadableTextDocument(reader);
+        return _documentCreators.TryGetValue(mimeType, out var creator) ? creator(reader) :
+            // Default to a text document if the MIME type is not supported
+            new ReadableTextDocument(reader);
     }
 }

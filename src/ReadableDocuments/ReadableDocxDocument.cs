@@ -1,24 +1,23 @@
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Parser;
-using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SearchEngine_.ReadableDocuments;
 
 /// <summary>
-/// Implementation of IReadableDocument for PDF documents using iTextSharp.
+/// Implementation of IReadableDocument for Microsoft Word DOCX documents using DocumentFormat.OpenXml.
 /// </summary>
-public class ReadablePdfDocument : IReadableDocument
+public class ReadableDocxDocument : IReadableDocument
 {
     private readonly StreamReader _reader;
     private string _content = string.Empty;
     private readonly List<string> _words = new();
     private int _wordIndex = 0;
     
-    public string MimeType => "application/pdf";
+    public string MimeType => "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     
-    public ReadablePdfDocument(StreamReader reader)
+    public ReadableDocxDocument(StreamReader reader)
     {
         _reader = reader;
     }
@@ -27,21 +26,14 @@ public class ReadablePdfDocument : IReadableDocument
     {
         try
         {
-            // Use iText7 to extract text from PDF
-            using (var pdfReader = new PdfReader(_reader.BaseStream))
-            using (var pdfDocument = new PdfDocument(pdfReader))
+            // Use DocumentFormat.OpenXml to extract text from DOCX files
+            using (var doc = WordprocessingDocument.Open(_reader.BaseStream, false))
             {
-                var text = new StringBuilder();
-                
-                for (int i = 1; i <= pdfDocument.GetNumberOfPages(); i++)
+                var body = doc.MainDocumentPart?.Document?.Body;
+                if (body != null)
                 {
-                    var page = pdfDocument.GetPage(i);
-                    var strategy = new SimpleTextExtractionStrategy();
-                    var pageText = PdfTextExtractor.GetTextFromPage(page, strategy);
-                    text.AppendLine(pageText);
+                    _content = body.InnerText;
                 }
-                
-                _content = text.ToString();
             }
             
             _reader.Close();
@@ -56,7 +48,7 @@ public class ReadablePdfDocument : IReadableDocument
         }
         catch (Exception)
         {
-            // If PDF processing fails, create empty content
+            // If DOCX processing fails, create empty content
             _content = string.Empty;
             _words.Clear();
         }
@@ -70,4 +62,3 @@ public class ReadablePdfDocument : IReadableDocument
         return _words[_wordIndex++];
     }
 }
-

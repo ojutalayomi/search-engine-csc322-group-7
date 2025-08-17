@@ -1,24 +1,21 @@
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Parser;
-using iText.Kernel.Pdf.Canvas.Parser.Listener;
-using System.Text;
+using GemBox.Document;
 using System.Text.RegularExpressions;
 
 namespace SearchEngine_.ReadableDocuments;
 
 /// <summary>
-/// Implementation of IReadableDocument for PDF documents using iTextSharp.
+/// Implementation of IReadableDocument for Microsoft Word DOC documents using GemBox.Document.
 /// </summary>
-public class ReadablePdfDocument : IReadableDocument
+public class ReadableDocDocument : IReadableDocument
 {
     private readonly StreamReader _reader;
     private string _content = string.Empty;
     private readonly List<string> _words = new();
     private int _wordIndex = 0;
     
-    public string MimeType => "application/pdf";
+    public string MimeType => "application/msword";
     
-    public ReadablePdfDocument(StreamReader reader)
+    public ReadableDocDocument(StreamReader reader)
     {
         _reader = reader;
     }
@@ -27,22 +24,10 @@ public class ReadablePdfDocument : IReadableDocument
     {
         try
         {
-            // Use iText7 to extract text from PDF
-            using (var pdfReader = new PdfReader(_reader.BaseStream))
-            using (var pdfDocument = new PdfDocument(pdfReader))
-            {
-                var text = new StringBuilder();
-                
-                for (int i = 1; i <= pdfDocument.GetNumberOfPages(); i++)
-                {
-                    var page = pdfDocument.GetPage(i);
-                    var strategy = new SimpleTextExtractionStrategy();
-                    var pageText = PdfTextExtractor.GetTextFromPage(page, strategy);
-                    text.AppendLine(pageText);
-                }
-                
-                _content = text.ToString();
-            }
+            // Use GemBox.Document to extract text from DOC files
+            ComponentInfo.SetLicense("FREE-LIMITED-KEY");
+            var doc = DocumentModel.Load(_reader.BaseStream);
+            _content = doc.Content.ToString();
             
             _reader.Close();
             
@@ -56,7 +41,7 @@ public class ReadablePdfDocument : IReadableDocument
         }
         catch (Exception)
         {
-            // If PDF processing fails, create empty content
+            // If DOC processing fails, create empty content
             _content = string.Empty;
             _words.Clear();
         }
@@ -70,4 +55,3 @@ public class ReadablePdfDocument : IReadableDocument
         return _words[_wordIndex++];
     }
 }
-

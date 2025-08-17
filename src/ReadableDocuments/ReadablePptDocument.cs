@@ -1,24 +1,22 @@
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Parser;
-using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using GemBox.Presentation;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SearchEngine_.ReadableDocuments;
 
 /// <summary>
-/// Implementation of IReadableDocument for PDF documents using iTextSharp.
+/// Implementation of IReadableDocument for Microsoft PowerPoint PPT documents using GemBox.Presentation.
 /// </summary>
-public class ReadablePdfDocument : IReadableDocument
+public class ReadablePptDocument : IReadableDocument
 {
     private readonly StreamReader _reader;
     private string _content = string.Empty;
-    private readonly List<string> _words = new();
+    private readonly List<string> _words = [];
     private int _wordIndex = 0;
     
-    public string MimeType => "application/pdf";
+    public string MimeType => "application/vnd.ms-powerpoint";
     
-    public ReadablePdfDocument(StreamReader reader)
+    public ReadablePptDocument(StreamReader reader)
     {
         _reader = reader;
     }
@@ -27,23 +25,17 @@ public class ReadablePdfDocument : IReadableDocument
     {
         try
         {
-            // Use iText7 to extract text from PDF
-            using (var pdfReader = new PdfReader(_reader.BaseStream))
-            using (var pdfDocument = new PdfDocument(pdfReader))
+            // Use GemBox.Presentation to extract text from PPT files
+            ComponentInfo.SetLicense("FREE-LIMITED-KEY");
+            var presentation = PresentationDocument.Load(_reader.BaseStream);
+            var text = new StringBuilder();
+            
+            foreach (var slide in presentation.Slides)
             {
-                var text = new StringBuilder();
-                
-                for (int i = 1; i <= pdfDocument.GetNumberOfPages(); i++)
-                {
-                    var page = pdfDocument.GetPage(i);
-                    var strategy = new SimpleTextExtractionStrategy();
-                    var pageText = PdfTextExtractor.GetTextFromPage(page, strategy);
-                    text.AppendLine(pageText);
-                }
-                
-                _content = text.ToString();
+                text.AppendLine(slide.Content.ToString());
             }
             
+            _content = text.ToString();
             _reader.Close();
             
             // Process the extracted text
@@ -56,7 +48,7 @@ public class ReadablePdfDocument : IReadableDocument
         }
         catch (Exception)
         {
-            // If PDF processing fails, create empty content
+            // If PPT processing fails, create empty content
             _content = string.Empty;
             _words.Clear();
         }
@@ -70,4 +62,3 @@ public class ReadablePdfDocument : IReadableDocument
         return _words[_wordIndex++];
     }
 }
-
