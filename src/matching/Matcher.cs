@@ -1,6 +1,6 @@
-﻿using SQLThing.indexing.api;
-using SQLThing.indexing.models;
-using SQLThing.ranking.impl;
+﻿using SearchEngine_.indexing.api;
+using SearchEngine_.indexing.models;
+using SearchEngine_.ranking.impl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
