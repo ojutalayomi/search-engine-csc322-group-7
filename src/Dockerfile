@@ -1,8 +1,8 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS build
-WORKDIR /src
+WORKDIR /app
 
-# Copy csproj and restore (Dockerfile is in src/, so the context should be src/)
+# Copy csproj and restore (Dockerfile is in app/, so the context should be app/)
 COPY SearchEngine_.csproj ./SearchEngine_.csproj
 RUN dotnet restore ./SearchEngine_.csproj
 
