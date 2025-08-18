@@ -1,10 +1,10 @@
-
 using NUnit.Framework;
-using SearchEngine.services;
+using SearchEngine_.services;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace SearchEngine.Tests.Indexing
+namespace SearchEngine_.tests.Indexing
 {
     public class IndexerTests
     {

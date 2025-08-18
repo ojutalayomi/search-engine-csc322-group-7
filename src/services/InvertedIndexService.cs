@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using MySql.Data.MySqlClient;
 
-namespace SearchEngine.services;
+namespace SearchEngine_.services;
 
 /// <summary>
 /// High-performance inverted index service for fast document retrieval.

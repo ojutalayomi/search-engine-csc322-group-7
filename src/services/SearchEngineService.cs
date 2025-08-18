@@ -1,9 +1,9 @@
 using SearchEngine_.indexing.models;
-using SearchEngine_.ReadableDocuments;
 using SearchEngine_.models;
+using SearchEngine_.ReadableDocuments;
 using SearchEngine_.utils;
 
-namespace SearchEngine.services;
+namespace SearchEngine_.services;
 
 /// <summary>
 /// Main service that orchestrates the search engine operations.
@@ -76,15 +76,20 @@ public class SearchEngineService
                 .GroupBy(w => w)
                 .ToDictionary(g => g.Key, g => (long)g.Count());
             
-            // Create and return the index
-            return new DocumentIndex
+            // Create index
+            var index = new DocumentIndex
             {
                 Id = request.Id,
-                DocumentType = contentType, // Use the actual detected MIME type
+                DocumentType = contentType,
                 DocumentLink = request.DocumentURL,
                 FrequencyDict = frequencyDict,
                 totalTermCount = words.Count
             };
+
+            // Also index into in-memory service so immediate searches work in tests
+            _indexService.IndexDocument(index.DocumentLink, index.FrequencyDict);
+
+            return index;
         }
         catch (Exception ex)
         {

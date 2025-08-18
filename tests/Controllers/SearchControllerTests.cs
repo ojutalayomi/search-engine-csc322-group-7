@@ -1,7 +1,7 @@
 
 using NUnit.Framework;
 
-namespace SearchEngine.Tests.Controllers
+namespace SearchEngine_.tests.Controllers
 {
     [Category("Integration")]
     [TestFixture]

@@ -1,10 +1,9 @@
-
+using System.Text;
 using NUnit.Framework;
 using SearchEngine_.ReadableDocuments;
 using System.IO;
-using System.Text;
 
-namespace SearchEngine.Tests.Readers
+namespace SearchEngine_.tests.ReadableDocuments
 {
     public class ReadableDocumentsTests
     {
@@ -31,13 +30,13 @@ namespace SearchEngine.Tests.Readers
             using var srHtml = new StreamReader(msHtml);
             var html = factory.CreateReadableDocument("text/html", srHtml);
             html.OpenDocument();
-            Assert.NotNull(html.ReadNextWord());
+            Assert.That(html.ReadNextWord(), Is.Not.Null);
 
             using var msXml = new MemoryStream(Encoding.UTF8.GetBytes("<root><x>Index engine</x></root>"));
             using var srXml = new StreamReader(msXml);
             var xml = factory.CreateReadableDocument("application/xml", srXml);
             xml.OpenDocument();
-            Assert.NotNull(xml.ReadNextWord());
+            Assert.That(xml.ReadNextWord(), Is.Not.Null);
         }
     }
 }

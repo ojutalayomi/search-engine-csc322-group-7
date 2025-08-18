@@ -10,6 +10,11 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SearchEngine_.csproj" />
+    <ProjectReference Include="..\src\SearchEngine_.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TestData\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

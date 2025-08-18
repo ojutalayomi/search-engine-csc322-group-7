@@ -1,24 +1,10 @@
 ﻿using SearchEngine_.indexing.api;
-<<<<<<< HEAD
 using SearchEngine_.ranking.impl;
 using SearchEngine_.indexing.models;
 
 namespace SearchEngine_.matching
 {
     public class Matcher: IMatcher
-=======
-using SearchEngine_.indexing.models;
-using SearchEngine_.ranking.impl;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SearchEngine_.matching
-{
-    public class Matcher:IMatcher
->>>>>>> 2e5dba8f14fa4cbcb1ed9d7bdd65d7befb3ae391
     {
         public Matcher(IInvertedIndexStorage invertedIndexStorage)
         {

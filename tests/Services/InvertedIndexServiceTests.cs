@@ -1,13 +1,11 @@
-
 using NUnit.Framework;
-using SearchEngine.services;
-using SearchEngine_.utils;
+using SearchEngine_.services;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System;
 
-namespace SearchEngine.Tests.Services
+namespace SearchEngine_.tests.Services
 {
     public class InvertedIndexServiceTests
     {
@@ -70,7 +68,7 @@ namespace SearchEngine.Tests.Services
             var results = index.SearchDocuments(new List<string>{ "engine","search"});
             sw.Stop();
             Assert.That(results, Is.Not.Empty);
-            Assert.LessOrEqual(sw.ElapsedMilliseconds, 100); // be pragmatic for test env
+            Assert.That(sw.ElapsedMilliseconds, Is.LessThanOrEqualTo(100)); // be pragmatic for test env
         }
     }
 }

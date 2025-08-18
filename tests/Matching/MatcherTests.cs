@@ -1,12 +1,11 @@
-
 using NUnit.Framework;
-using SearchEngine.services;
+using SearchEngine_.services;
 using SearchEngine_.utils;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SearchEngine.Tests.Matching
+namespace SearchEngine_.tests.Matching
 {
     public class MatchingTests
     {

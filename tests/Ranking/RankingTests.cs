@@ -1,10 +1,9 @@
-
 using NUnit.Framework;
-using SearchEngine.services;
+using SearchEngine_.services;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SearchEngine.Tests.Ranking
+namespace SearchEngine_.tests.Ranking
 {
     public class RankingTests
     {

@@ -1,9 +1,8 @@
-
 using NUnit.Framework;
 using SearchEngine_.utils;
 using System.Collections.Generic;
 
-namespace SearchEngine.Tests.Utils
+namespace SearchEngine_.tests.Utils
 {
     public class StopWordFilterTests
     {

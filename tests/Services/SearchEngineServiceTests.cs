@@ -1,23 +1,28 @@
-
-using NUnit.Framework;
-using SearchEngine.services;
-using SearchEngine_.utils;
-using SearchEngine_.ReadableDocuments;
-using SearchEngine_.models;
-using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using NUnit.Framework;
+using SearchEngine_.models;
+using SearchEngine_.ReadableDocuments;
+using SearchEngine_.services;
+using SearchEngine_.utils;
 
-namespace SearchEngine.Tests.Services
+namespace SearchEngine_.tests.Services
 {
-    // Minimal fake link resolver that reads from embedded string/stream
+    // Minimal fake link resolver that returns a memory stream with provided content
     class FakeLinkResolver : ILinkResolver
     {
         private readonly string _content;
         public FakeLinkResolver(string content) { _content = content; }
-        public Task<string> ResolveAsync(string link) => Task.FromResult(_content);
+
+        public (string ContentType, StreamReader StreamReader) ResolveLink(string link, List<string> acceptableMimeTypes)
+        {
+            var ms = new MemoryStream(Encoding.UTF8.GetBytes(_content));
+            return ("text/plain", new StreamReader(ms));
+        }
     }
 
     [TestFixture]
