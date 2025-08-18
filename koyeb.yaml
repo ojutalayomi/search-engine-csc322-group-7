@@ -1,0 +1,26 @@
+name: unilag-search
+services:
+  - name: api
+    type: web
+    build:
+      type: docker
+      dockerfile: src/Dockerfile
+      context: .
+    routes:
+      - path: /
+    ports:
+      - port: 8080
+        protocol: http
+    env:
+      - key: ASPNETCORE_URLS
+        value: http://0.0.0.0:8080
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        value: "true"
+      - key: MYSQL_CONNECTION_STRING
+        value: ${MYSQL_CONNECTION_STRING}   # define as a secret in Koyeb
+    healthcheck:
+      path: /api/health
+      interval: 10s
+      timeout: 5s

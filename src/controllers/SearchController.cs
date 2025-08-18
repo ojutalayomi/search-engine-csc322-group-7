@@ -51,7 +51,7 @@ public class SearchController : ControllerBase
         try
         {
             var startTime = DateTime.UtcNow;
-
+            
             // Tokenize query
             var tokensFromQuery = _queryTokenizer.TokenizeQuery(query);
             var words = tokensFromQuery.Select(t => t.Word).ToList();
@@ -113,9 +113,9 @@ public class SearchController : ControllerBase
                     .Cast<object>()
                     .ToList();
             }
-
+            
             var responseTime = (DateTime.UtcNow - startTime).TotalMilliseconds;
-
+            
             return Ok(new
             {
                 Query = query,

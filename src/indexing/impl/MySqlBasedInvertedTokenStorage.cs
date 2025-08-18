@@ -265,7 +265,7 @@ namespace SearchEngine_.indexing.impl
                 {
                     connection.Open();
                     using var tx = connection.BeginTransaction();
-
+                   
                     //sum up all token counts in index
                     index.totalTermCount = index.FrequencyDict.Values.Sum();
 
