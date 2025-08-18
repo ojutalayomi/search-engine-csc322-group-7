@@ -4,6 +4,7 @@ using SearchEngine_.ReadableDocuments;
 using SearchEngine_.helpers;
 using SearchEngine_.indexing.impl;
 using SearchEngine_.services;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace SearchEngine_
 {
@@ -40,7 +41,18 @@ namespace SearchEngine_
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            // Honor X-Forwarded-* headers from Koyeb / reverse proxy
+            var fhOptions = new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            };
+            // Accept forwarded headers from any proxy (Koyeb manages the edge)
+            fhOptions.KnownNetworks.Clear();
+            fhOptions.KnownProxies.Clear();
+            app.UseForwardedHeaders(fhOptions);
+
+            // Do not force HTTPS redirection inside container; Koyeb terminates TLS at the edge
+            // app.UseHttpsRedirection();
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
