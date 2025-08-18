@@ -27,7 +27,7 @@ namespace SearchEngine_.matching
                 return Array.Empty<DocumentIndex>();
             }
 
-            return RankingAlgorithm.Rank(matchedDocuments, tokenIds).ToArray();
+            return RankingAlgorithm.Rank(matchedDocuments, token).ToArray();
         }
     }
 }

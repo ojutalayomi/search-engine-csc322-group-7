@@ -5,7 +5,7 @@ namespace SearchEngine_.ranking.api
 {
     public interface IRanking
     {
-        List<ScoredDocumentIndex> Rank(List<DocumentIndex> scoredIndex, int[] tokenIds);
+        List<ScoredDocumentIndex> Rank(List<DocumentIndex> scoredIndex, Token[] tokens);
 
     }
 }

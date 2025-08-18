@@ -223,34 +223,21 @@ namespace SearchEngine_.indexing.impl
 
         public long GetTotalCorpusSize()
         {
-            string query = "SHOW TABLE STATUS LIKE 'your_table_name';";
-            long rowCount = 0;
-            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            // Return total number of documents for IDF
+            const string query = "SELECT COUNT(*) FROM documents";
+            using var connection = new MySqlConnection(ConnectionString);
+            try
             {
-                try
-                {
-                    connection.Open();
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
-                    {
-                        using (MySqlDataReader reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                // The 'Rows' column is the 5th column (index 4) in the SHOW TABLE STATUS result set
-                                // Or you can use GetInt64 for a more direct approach
-                                rowCount = reader.GetInt64("Rows");
-                            }
-                        }
-                    }
-                }
-                catch (MySqlException ex)
-                {
-                    // Handle the exception (e.g., log it or throw a custom exception)
-                    Console.WriteLine($"Error retrieving table status: {ex.Message}");
-                    throw new Exception("Unable to get approximate row count.", ex);
-                }
+                connection.Open();
+                using var cmd = new MySqlCommand(query, connection);
+                var result = cmd.ExecuteScalar();
+                return Convert.ToInt64(result);
             }
-            return rowCount;
+            catch (MySqlException ex)
+            {
+                Console.WriteLine($"Error retrieving total corpus size: {ex.Message}");
+                throw new Exception("Unable to get total corpus size.", ex);
+            }
         }
     
 

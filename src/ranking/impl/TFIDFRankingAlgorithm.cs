@@ -16,8 +16,15 @@ namespace SearchEngine_.ranking.impl
             _totalCorpusSize = _invertedIndexStorage.GetTotalCorpusSize();
         }
 
-        public List<ScoredDocumentIndex> Rank(List<DocumentIndex> indexes, int[] tokenIds)
+        public List<ScoredDocumentIndex> Rank(List<DocumentIndex> indexes, Token[] tokens)
         {
+            if (tokens == null || tokens.Length == 0)
+            {
+                return indexes.Select(d => new ScoredDocumentIndex(d, 0)).ToList();
+            }
+
+            int[] tokenIds = tokens.Select(t => int.Parse(t.Id)).ToArray();
+
             // 1. Get posting list sizes for the relevant tokens
             Dictionary<int, long> postingListSizes = _invertedIndexStorage.GetPostingListSizes(tokenIds);
             _totalCorpusSize = _invertedIndexStorage.GetTotalCorpusSize();
@@ -29,24 +36,21 @@ namespace SearchEngine_.ranking.impl
             {
                 double documentScore = 0;
 
-                foreach (var token in tokenIds)
+                foreach (var token in tokens)
                 {
-                    // Retrieve the string representation of the token (assuming a mapping exists)
-                    // This part depends on how your tokens are stored.
-                    // For simplicity, we'll assume we can get it from an existing dictionary
-                    // or just use the token ID to access the frequency.
+                    var tokenId = int.Parse(token.Id);
+                    var term = token.Value; // frequency keyed by term string
 
-                    // Check if the document contains the token and get its frequency
-                    if (docIndex.FrequencyDict.TryGetValue(token.ToString(), out long termFrequency))
+                    if (docIndex.FrequencyDict.TryGetValue(term, out long termFrequency))
                     {
                         // Calculate TF: (term count in doc) / (total terms in doc)
                         double tf = (double)termFrequency / docIndex.totalTermCount;
 
                         // Calculate IDF: log(total docs / docs with term)
                         double idf = 0;
-                        if (postingListSizes.ContainsKey(token) && postingListSizes[token] > 0)
+                        if (postingListSizes.ContainsKey(tokenId) && postingListSizes[tokenId] > 0)
                         {
-                            idf = Math.Log((double)_totalCorpusSize / postingListSizes[token]);
+                            idf = Math.Log((double)_totalCorpusSize / postingListSizes[tokenId]);
                         }
 
                         // Calculate TF-IDF score for the term in the document
