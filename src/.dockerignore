@@ -1,0 +1,11 @@
+# Build outputs
+bin/
+obj/
+**/bin
+**/obj
+
+# OS cruft
+.DS_Store
+
+# Symbols
+*.pdb

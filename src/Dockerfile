@@ -2,12 +2,12 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS build
 WORKDIR /src
 
-# Copy csproj and restore
-COPY src/SearchEngine_.csproj ./SearchEngine_.csproj
+# Copy csproj and restore (Dockerfile is in src/, so the context should be src/)
+COPY SearchEngine_.csproj ./SearchEngine_.csproj
 RUN dotnet restore ./SearchEngine_.csproj
 
 # Copy the rest and publish
-COPY src/ .
+COPY . .
 RUN dotnet publish ./SearchEngine_.csproj -c Release -o /out /p:UseAppHost=false
 
 # Runtime stage (Debian-based to satisfy native deps for PDF/Office libraries)
