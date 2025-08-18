@@ -8,7 +8,7 @@ namespace SearchEngine_.indexing.impl
     internal class MySqlBasedInvertedTokenStorage : IInvertedIndexStorage
     {
         //externalize this connection string
-        private const string ConnectionString = "Server=localhost;Database=search-engine-demo;User=search_user;Password=melosity;";
+        private static readonly string ConnectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTION_STRING") ?? "";
 
         public long GetPostingListSize(Token token)
         {
@@ -259,46 +259,79 @@ namespace SearchEngine_.indexing.impl
             //batch update into a temporary table
             string tempTableName = BatchUpdateIntoTemporaryTokenFrequencyTable(index.FrequencyDict);
 
-            string creationD = $"" +
-                $"UPDATE {tempTableName} t" +
-                $" JOIN inverted_index_table i ON t.value = i.value " +
-                $"SET t.token_id = i.id;" +
-                $" " +
-                $"INSERT INTO inverted_index_table (value) " +
-                $"SELECT value FROM {tempTableName} t WHERE t.token_id IS NULL; " +
-                $"" +
-                $"INSERT INTO documents (document_link, total_term_count,document_type) VALUES (@doc_link, @doc_term_count, @doc_type);" +
-                $"" +
-                $"SET @doc_id = LAST_INSERT_ID();" +
-                $"\n " +
-                $"INSERT INTO posting_list (document_id, token_id, frequency) " +
-                $" SELECT @doc_id, token_id, frequency FROM {tempTableName};" +
-                $"" +
-                $"INSERT INTO token_posting_list_size(id, size)\n" +
-                $"SELECT token_id, 1 FROM {tempTableName} \n" +
-                $"ON DUPLICATE KEY UPDATE size = size + 1;" +
-                $"" +
-                $"\n" +
-                $"DROP TEMPORARY TABLE {tempTableName}";
-                
-
-        
             using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
                 try
                 {
                     connection.Open();
-                   
+                    using var tx = connection.BeginTransaction();
+
                     //sum up all token counts in index
                     index.totalTermCount = index.FrequencyDict.Values.Sum();
 
-                    var creationCommand = connection.CreateCommand();
-                    creationCommand.Parameters.AddWithValue("@doc_link", index.DocumentLink);
-                    creationCommand.Parameters.AddWithValue("@doc_term_count", index.totalTermCount);
-                    creationCommand.Parameters.AddWithValue("@doc_type", index.DocumentType);
-                    creationCommand.Parameters.AddWithValue("@doc_id", null); //this will be set to the last inserted id after the document is inserted
-                    creationCommand.CommandText = creationD;
-                    creationCommand.ExecuteNonQuery();
+                    // 1) Map existing tokens
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = $"UPDATE {tempTableName} t JOIN inverted_index_table i ON t.value = i.value SET t.token_id = i.id";
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 2) Insert missing tokens
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = $"INSERT INTO inverted_index_table (value) SELECT t.value FROM {tempTableName} t LEFT JOIN inverted_index_table i ON t.value = i.value WHERE i.id IS NULL";
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 3) Map again to fill token_id
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = $"UPDATE {tempTableName} t JOIN inverted_index_table i ON t.value = i.value SET t.token_id = i.id WHERE t.token_id IS NULL";
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 4) Insert document row
+                    long docId;
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = "INSERT INTO documents (document_link, total_term_count, document_type) VALUES (@doc_link, @doc_term_count, @doc_type);";
+                        cmd.Parameters.AddWithValue("@doc_link", index.DocumentLink);
+                        cmd.Parameters.AddWithValue("@doc_term_count", index.totalTermCount);
+                        cmd.Parameters.AddWithValue("@doc_type", index.DocumentType);
+                        cmd.ExecuteNonQuery();
+                        docId = cmd.LastInsertedId;
+                    }
+
+                    // 5) Insert posting list rows
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = $"INSERT INTO posting_list (document_id, token_id, frequency) SELECT @doc_id, token_id, frequency FROM {tempTableName} WHERE token_id IS NOT NULL";
+                        cmd.Parameters.AddWithValue("@doc_id", docId);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 6) Update posting list sizes
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = $"INSERT INTO token_posting_list_size(id, size) SELECT token_id, 1 FROM {tempTableName} WHERE token_id IS NOT NULL ON DUPLICATE KEY UPDATE size = size + 1";
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 7) Drop temp table
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = $"DROP TEMPORARY TABLE {tempTableName}";
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    tx.Commit();
                 }
                 catch (MySqlException ex)
                 {

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using MySql.Data.MySqlClient;
 
 namespace SearchEngine.services;
 
@@ -18,12 +19,14 @@ public class InvertedIndexService
     private readonly ConcurrentDictionary<string, int> _wordFrequency;
     
     private int _nextDocumentId = 1;
+    private readonly string _connectionString;
     
     public InvertedIndexService()
     {
         _invertedIndex = new ConcurrentDictionary<string, List<DocumentOccurrence>>();
         _documentMetadata = new ConcurrentDictionary<int, DocumentMetadata>();
         _wordFrequency = new ConcurrentDictionary<string, int>();
+        _connectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTION_STRING") ?? string.Empty;
     }
     
     /// <summary>
@@ -161,13 +164,65 @@ public class InvertedIndexService
     /// </summary>
     public IndexStatistics GetStatistics()
     {
+        // Try database-backed statistics first
+        var dbStats = TryGetDatabaseStatistics();
+        if (dbStats != null)
+        {
+            return dbStats;
+        }
+
+        // Fallback to in-memory statistics
         return new IndexStatistics
         {
             TotalDocuments = _documentMetadata.Count,
             TotalWords = _invertedIndex.Count,
             TotalOccurrences = _invertedIndex.Values.Sum(list => list.Count),
-            AverageWordsPerDocument = _documentMetadata.Values.Average(doc => doc.WordCount)
+            AverageWordsPerDocument = _documentMetadata.Count == 0
+                ? 0
+                : _documentMetadata.Values.Average(doc => doc.WordCount)
         };
+    }
+
+    private IndexStatistics? TryGetDatabaseStatistics()
+    {
+        if (string.IsNullOrWhiteSpace(_connectionString))
+            return null;
+
+        try
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+            const string sql = @"SELECT
+                (SELECT COUNT(*) FROM documents) AS totalDocuments,
+                (SELECT COUNT(*) FROM inverted_index_table) AS totalWords,
+                (SELECT COUNT(*) FROM posting_list) AS totalOccurrences,
+                (SELECT IFNULL(AVG(total_term_count), 0) FROM documents) AS avgWordsPerDocument;";
+
+            using var command = new MySqlCommand(sql, connection);
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                var totalDocuments = Convert.ToInt32(reader["totalDocuments"]);
+                var totalWords = Convert.ToInt32(reader["totalWords"]);
+                var totalOccurrences = Convert.ToInt32(reader["totalOccurrences"]);
+                var avg = Convert.ToDouble(reader["avgWordsPerDocument"]);
+
+                return new IndexStatistics
+                {
+                    TotalDocuments = totalDocuments,
+                    TotalWords = totalWords,
+                    TotalOccurrences = totalOccurrences,
+                    AverageWordsPerDocument = avg
+                };
+            }
+        }
+        catch
+        {
+            // Ignore DB errors and fall back to in-memory stats
+        }
+
+        return null;
     }
     
     private double CalculateWordScore(string word, int frequency)

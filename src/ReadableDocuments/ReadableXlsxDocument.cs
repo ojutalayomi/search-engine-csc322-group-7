@@ -2,7 +2,6 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Linq;
 
 namespace SearchEngine_.ReadableDocuments;
 

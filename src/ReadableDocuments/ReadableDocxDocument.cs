@@ -1,6 +1,4 @@
 using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Wordprocessing;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SearchEngine_.ReadableDocuments;

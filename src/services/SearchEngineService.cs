@@ -40,13 +40,24 @@ public class SearchEngineService
         try
         {
             // Define acceptable MIME types
-            var acceptableMimeTypes = new List<string> { "text/html", "text/plain", "application/xml", "application/pdf",  };
+            var acceptableMimeTypes = new List<string> { 
+                "text/html", 
+                "text/plain", 
+                "application/xml", 
+                "application/pdf",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/vnd.ms-powerpoint",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            };
             
             // Download the document
-            using var streamReader = _linkResolver.ResolveLink(request.DocumentURL, acceptableMimeTypes);
+            var (contentType, streamReader) = _linkResolver.ResolveLink(request.DocumentURL, acceptableMimeTypes);
             
             // Create readable document based on MIME type
-            var document = _documentFactory.CreateReadableDocument("text/html", streamReader);
+            var document = _documentFactory.CreateReadableDocument(contentType, streamReader);
             document.OpenDocument();
             
             // Read all words from the document
@@ -69,7 +80,7 @@ public class SearchEngineService
             return new DocumentIndex
             {
                 Id = request.Id,
-                DocumentType = streamReader.GetType(),
+                DocumentType = contentType, // Use the actual detected MIME type
                 DocumentLink = request.DocumentURL,
                 FrequencyDict = frequencyDict,
                 totalTermCount = words.Count

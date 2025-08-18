@@ -13,7 +13,7 @@ public class LinkResolver : ILinkResolver
         _httpClient.Timeout = TimeSpan.FromMinutes(5); // 5 minute timeout
     }
     
-    public StreamReader ResolveLink(string link, List<string> acceptableMimeTypes)
+    public (string ContentType, StreamReader StreamReader) ResolveLink(string link, List<string> acceptableMimeTypes)
     {
         try
         {
@@ -37,7 +37,7 @@ public class LinkResolver : ILinkResolver
             }
             
             var stream = response.Content.ReadAsStreamAsync().Result;
-            return new StreamReader(stream);
+            return (contentType, new StreamReader(stream));
         }
         catch (Exception ex) when (ex is not UnsupportedMediaTypeException)
         {

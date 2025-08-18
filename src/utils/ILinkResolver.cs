@@ -10,7 +10,7 @@ public interface ILinkResolver
     /// </summary>
     /// <param name="link">The URL to resolve.</param>
     /// <param name="acceptableMimeTypes">List of acceptable MIME types.</param>
-    /// <returns>A stream reader containing the document data.</returns>
+    /// <returns>A tuple containing the content type and a stream reader containing the document data.</returns>
     /// <exception cref="UnsupportedMediaTypeException">Thrown when the content type doesn't match acceptable types.</exception>
-    StreamReader ResolveLink(string link, List<string> acceptableMimeTypes);
+    (string ContentType, StreamReader StreamReader) ResolveLink(string link, List<string> acceptableMimeTypes);
 }

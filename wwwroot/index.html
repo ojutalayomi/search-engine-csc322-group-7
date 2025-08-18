@@ -1005,6 +1005,7 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
+                        id: generateId(), // Generate a unique ID
                         documentURL: url,
                         documentName: new URL(url).hostname,
                         priority: 0,
@@ -1025,6 +1026,11 @@
                 console.error('URL processing error:', error);
                 showUploadStatus('Error processing URL: ' + error.message, 'error');
             }
+        }
+        
+        // Generate a unique ID for requests
+        function generateId() {
+            return 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
         
         function isValidUrl(string) {
