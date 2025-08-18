@@ -1,0 +1,9 @@
+.idea
+bin/
+<<<<<<< HEAD
+obj/
+.env
+=======
+.vs/
+obj/
+>>>>>>> 2e5dba8f14fa4cbcb1ed9d7bdd65d7befb3ae391
