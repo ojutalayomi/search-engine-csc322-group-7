@@ -803,10 +803,11 @@
                 return;
             }
             
-            let html = `<div class="performance-info">
-                ⚡ Found ${data.totalResults} results in ${data.responseTimeMs?.toFixed(2) || 'N/A'}ms 
-                (Client time: ${clientTime.toFixed(2)}ms)
-            </div>`;
+            // let html = `<div class="performance-info">
+            //     ⚡ Found ${data.totalResults} results in ${data.responseTimeMs?.toFixed(2) || 'N/A'}ms 
+            //     (Client time: ${clientTime.toFixed(2)}ms)
+            // </div>`;
+            let html = '';
             
             data.results.forEach(result => {
                 html += `
