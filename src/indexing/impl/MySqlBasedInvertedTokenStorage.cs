@@ -137,6 +137,7 @@ namespace SearchEngine_.indexing.impl
                 }
                 catch (MySqlException ex)
                 {
+                    Console.WriteLine(ex.Message);
                     throw new Exception("Error executing query to match tokens", ex);
                 }
             }
@@ -173,6 +174,7 @@ namespace SearchEngine_.indexing.impl
                 }
                 catch (MySqlException ex)
                 {
+                    Console.WriteLine(ex.Message);
                     throw new Exception("Error executing query to get shortest posting list token ID", ex);
                 }
             }
@@ -236,22 +238,22 @@ namespace SearchEngine_.indexing.impl
             catch (MySqlException ex)
             {
                 Console.WriteLine($"Error retrieving total corpus size: {ex.Message}");
-                throw new Exception("Unable to get total corpus size.", ex);
+                throw new Exception("Unable to get total corpus size. " + ex.Message, ex);
             }
         }
     
 
         public void StoreIndex(DocumentIndex index)
         {
-            //batch update into a temporary table
-            string tempTableName = BatchUpdateIntoTemporaryTokenFrequencyTable(index.FrequencyDict);
-
             using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
                 try
                 {
                     connection.Open();
                     using var tx = connection.BeginTransaction();
+                    
+                    //batch update into a temporary table using same connection/transaction
+                    string tempTableName = BatchUpdateIntoTemporaryTokenFrequencyTable(connection, tx, index.FrequencyDict);
                    
                     //sum up all token counts in index
                     index.totalTermCount = index.FrequencyDict.Values.Sum();
@@ -264,11 +266,11 @@ namespace SearchEngine_.indexing.impl
                         cmd.ExecuteNonQuery();
                     }
 
-                    // 2) Insert missing tokens
+                    // 2) Insert missing tokens (ignore duplicates by unique constraint)
                     using (var cmd = connection.CreateCommand())
                     {
                         cmd.Transaction = tx;
-                        cmd.CommandText = $"INSERT INTO inverted_index_table (value) SELECT t.value FROM {tempTableName} t LEFT JOIN inverted_index_table i ON t.value = i.value WHERE i.id IS NULL";
+                        cmd.CommandText = $"INSERT IGNORE INTO inverted_index_table (value) SELECT DISTINCT t.value FROM {tempTableName} t";
                         cmd.ExecuteNonQuery();
                     }
 
@@ -323,60 +325,62 @@ namespace SearchEngine_.indexing.impl
                 catch (MySqlException ex)
                 {
                     //handle the exception, log it, etc.
-                    throw new Exception("Error executing batch update into temporary token frequency table", ex);
+                    Console.WriteLine(ex.Message);
+                    throw new Exception("Error executing batch update into temporary token frequency table " + ex.Message, ex);
 
                 }
 
             }
         }
 
-        private string BatchUpdateIntoTemporaryTokenFrequencyTable(IDictionary<string, long> tokenFrequencyTable)
+        private string BatchUpdateIntoTemporaryTokenFrequencyTable(MySqlConnection connection, MySqlTransaction transaction, IDictionary<string, long> tokenFrequencyTable)
         {
             string tempTableName = $"temp_token_freq_{Guid.NewGuid().ToString().Replace("-", "")}";
-            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            try
             {
-                try
+                string sql = $"CREATE TEMPORARY TABLE {tempTableName} (id INT PRIMARY KEY AUTO_INCREMENT, value VARCHAR(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin UNIQUE, frequency INT, token_id INT); ";
+                using (var tempTableCreationCommand = new MySqlCommand(sql, connection, transaction))
                 {
-                    connection.Open();
-
-                    string sql = $"CREATE TEMPORARY TABLE {tempTableName} (id INT PRIMARY KEY AUTO_INCREMENT, value VARCHAR(200) UNIQUE, frequency INT, token_id INT); ";
-                    var tempTableCreationCommand = new MySqlCommand(sql, connection);
                     tempTableCreationCommand.ExecuteNonQuery();
-                    int batchSize = 800;
-                    for (int i = 0; i < tokenFrequencyTable.Count; i += batchSize)
+                }
+                int batchSize = 800;
+                for (int i = 0; i < tokenFrequencyTable.Count; i += batchSize)
+                {
+                    var batch = tokenFrequencyTable.Skip(i).Take(batchSize).ToList();
+
+                    // Build the SQL INSERT statement with multiple value sets
+                    var sqlBuilder = new StringBuilder($"INSERT INTO {tempTableName} (value, frequency) VALUES ");
+                    var parameters = new List<MySqlParameter>();
+
+                    for (int j = 0; j < batch.Count; j++)
                     {
-                        var batch = tokenFrequencyTable.Skip(i).Take(batchSize).ToList();
-
-                        // Build the SQL INSERT statement with multiple value sets
-                        var sqlBuilder = new StringBuilder($"INSERT INTO {tempTableName} (value, frequency) VALUES ");
-                        var parameters = new List<MySqlParameter>();
-
-                        for (int j = 0; j < batch.Count; j++)
+                        // Append a set of parameterized values
+                        sqlBuilder.Append($"( @Value{j}, @Frequency{j})");
+                        if (j < batch.Count - 1)
                         {
-                            // Append a set of parameterized values
-                            sqlBuilder.Append($"( @Value{j}, @Frequency{j})");
-                            if (j < batch.Count - 1)
-                            {
-                                sqlBuilder.Append(", ");
-                            }
-
-                            // Add parameters for each value
-
-                            parameters.Add(new MySqlParameter($"@Value{j}", batch[j].Key));
-                            parameters.Add(new MySqlParameter($"@Frequency{j}", batch[j].Value));
+                            sqlBuilder.Append(", ");
                         }
-                        var command = connection.CreateCommand();
+
+                        // Add parameters for each value
+                        parameters.Add(new MySqlParameter($"@Value{j}", batch[j].Key));
+                        parameters.Add(new MySqlParameter($"@Frequency{j}", batch[j].Value));
+                    }
+                    // Merge duplicates on unique key by summing frequencies
+                    sqlBuilder.Append(" ON DUPLICATE KEY UPDATE frequency = frequency + VALUES(frequency)");
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.Transaction = transaction;
                         command.CommandText = sqlBuilder.ToString();
                         command.Parameters.Clear();
                         command.Parameters.AddRange(parameters.ToArray());
-
                         command.ExecuteNonQuery();
                     }
                 }
-                catch (MySqlException e)
-                {
-                    throw new Exception("Error executing batch update into temporary token frequency table", e);
-                }
+            }
+            catch (MySqlException e)
+            {
+                Console.WriteLine(e.Message);
+                throw new Exception("Error executing batch update into temporary token frequency table", e);
             }
             return tempTableName;
         }
